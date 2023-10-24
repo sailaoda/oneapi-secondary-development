@@ -15,7 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func testChannel(channel *model.Channel, request ChatRequest) (err error, openaiErr *OpenAIError) {
+func testChannel(channel *model.Channel, request ChatRequest, addazure AzureAdditionRequest) (err error, openaiErr *OpenAIError) {
 	switch channel.Type {
 	case common.ChannelTypePaLM:
 		fallthrough
@@ -32,26 +32,36 @@ func testChannel(channel *model.Channel, request ChatRequest) (err error, openai
 	case common.ChannelTypeXunfei:
 		return errors.New("该渠道类型当前版本不支持测试，请手动测试"), nil
 	case common.ChannelTypeAzure:
-		request.Model = "gpt-35-turbo"
+		fallthrough
+		/*request.Model = "gpt-35-turbo"
 		defer func() {
 			if err != nil {
 				err = errors.New("请确保已在 Azure 上创建了 gpt-35-turbo 模型，并且 apiVersion 已正确填写！")
 			}
-		}()
+		}()*/
 	default:
-		request.Model = "gpt-3.5-turbo"
+		// request.Model = "gpt-3.5-turbo"
+		request.Model = "gpt4-32"
 	}
 	requestURL := common.ChannelBaseURLs[channel.Type]
 	if channel.Type == common.ChannelTypeAzure {
-		requestURL = fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=2023-03-15-preview", channel.GetBaseURL(), request.Model)
+		if request.Model == "gpt4-32" {
+			requestURL = channel.GetBaseURL()
+		} else {
+			requestURL = fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=2023-07-01-preview", channel.GetBaseURL(), request.Model)
+		}
+
 	} else {
 		if channel.GetBaseURL() != "" {
 			requestURL = channel.GetBaseURL()
 		}
 		requestURL += "/v1/chat/completions"
 	}
-
+	// addJson, err := json.Marshal(addazure)
 	jsonData, err := json.Marshal(request)
+	// if request.Model == "gpt4-32" {
+	// jsonData = append(jsonData, addJson...)
+	// }
 	if err != nil {
 		return err, nil
 	}
@@ -61,8 +71,6 @@ func testChannel(channel *model.Channel, request ChatRequest) (err error, openai
 	}
 	if channel.Type == common.ChannelTypeAzure {
 		req.Header.Set("api-key", channel.Key)
-		req.Header.Set("api-type", "azure")
-		req.Header.Set("api-version", "2023-07-01-preview")
 	} else {
 		req.Header.Set("Authorization", "Bearer "+channel.Key)
 	}
@@ -78,9 +86,19 @@ func testChannel(channel *model.Channel, request ChatRequest) (err error, openai
 		return err, nil
 	}
 	if response.Usage.CompletionTokens == 0 {
-		return errors.New(fmt.Sprintf("type %s, code %v, message %s", response.Error.Type, response.Error.Code, response.Error.Message)), &response.Error
+		return errors.New(fmt.Sprintf("type1 %s, code %v, message %s , url %s", response.Error.Type, response.Error.Code, response.Error.Message, requestURL)), &response.Error
 	}
 	return nil, nil
+}
+
+func buildTestAzure() *AzureAdditionRequest {
+	testAzure := &AzureAdditionRequest{
+		ApiBase:    "",
+		ApiType:    "azure",
+		ApiVersion: "2023-07-01-preview",
+		Engine:     "",
+	}
+	return testAzure
 }
 
 func buildTestRequest() *ChatRequest {
@@ -114,8 +132,9 @@ func TestChannel(c *gin.Context) {
 		return
 	}
 	testRequest := buildTestRequest()
+	testAzure := buildTestAzure()
 	tik := time.Now()
-	err, _ = testChannel(channel, *testRequest)
+	err, _ = testChannel(channel, *testRequest, *testAzure)
 	tok := time.Now()
 	milliseconds := tok.Sub(tik).Milliseconds()
 	go channel.UpdateResponseTime(milliseconds)
@@ -169,6 +188,7 @@ func testAllChannels(notify bool) error {
 		return err
 	}
 	testRequest := buildTestRequest()
+	testAzure := buildTestAzure()
 	var disableThreshold = int64(common.ChannelDisableThreshold * 1000)
 	if disableThreshold == 0 {
 		disableThreshold = 10000000 // a impossible value
@@ -179,7 +199,7 @@ func testAllChannels(notify bool) error {
 				continue
 			}
 			tik := time.Now()
-			err, openaiErr := testChannel(channel, *testRequest)
+			err, openaiErr := testChannel(channel, *testRequest, *testAzure)
 			tok := time.Now()
 			milliseconds := tok.Sub(tik).Milliseconds()
 			if milliseconds > disableThreshold {

@@ -63,6 +63,13 @@ func (r GeneralOpenAIRequest) ParseInput() []string {
 	return input
 }
 
+type AzureAdditionRequest struct {
+	Engine     string `json:"engine"`
+	ApiBase    string `json:"api_base"`
+	ApiType    string `json:"api_type"`
+	ApiVersion string `json:"api_version"`
+}
+
 type ChatRequest struct {
 	Model     string    `json:"model"`
 	Messages  []Message `json:"messages"`
