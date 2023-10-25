@@ -32,7 +32,8 @@ func testChannel(channel *model.Channel, request ChatRequest, addazure AzureAddi
 	case common.ChannelTypeXunfei:
 		return errors.New("该渠道类型当前版本不支持测试，请手动测试"), nil
 	case common.ChannelTypeAzure:
-		fallthrough
+		// fallthrough
+		request.Model = channel.Name
 		/*request.Model = "gpt-35-turbo"
 		defer func() {
 			if err != nil {
@@ -41,15 +42,12 @@ func testChannel(channel *model.Channel, request ChatRequest, addazure AzureAddi
 		}()*/
 	default:
 		// request.Model = "gpt-3.5-turbo"
-		request.Model = "gpt4-32"
+		// request.Model = "gpt4-32"
+		request.Model = channel.Name
 	}
 	requestURL := common.ChannelBaseURLs[channel.Type]
 	if channel.Type == common.ChannelTypeAzure {
-		if request.Model == "gpt4-32" {
-			requestURL = channel.GetBaseURL()
-		} else {
-			requestURL = fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=2023-07-01-preview", channel.GetBaseURL(), request.Model)
-		}
+		requestURL = fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=2023-07-01-preview", channel.GetBaseURL(), request.Model)
 
 	} else {
 		if channel.GetBaseURL() != "" {

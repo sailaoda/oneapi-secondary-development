@@ -10,7 +10,7 @@
    cd ..
    go mod download
    go build -ldflags "-s -w" -o azure-openai-one-api
-
+   
    ````
 2. 运行：
    ```shell
@@ -18,6 +18,27 @@
    ./azure-openai-one-api --port 3000 --log-dir ./logs
    ```
 3. 访问 [http://localhost:3000/](http://localhost:3000/) 并登录。初始账号用户名为 `root`，密码为 `123456`。
+
+4. 使用
+   ```python
+   import openai
+   
+   openai.api_key = 'sk-xxxxxxxxxxx' # 令牌处创建，获得
+   openai.api_base = 'http://localhost:3000/v1'
+   
+   messages = [{"role": "user", "content": "你是谁"}]
+   response = openai.ChatCompletion.create(
+       #model='gpt-4',
+       model='gpt-3.5-turbo',
+       # model='gpt-4-32k',
+       # model='gpt-3.5-turbo-16k',
+       messages=messages
+   )
+   print(response['choices'][0]['message']['content'])
+   
+   
+   ```
+
 
 ## 配置
 系统本身开箱即用。
