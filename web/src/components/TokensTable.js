@@ -102,7 +102,8 @@ const TokensTable = () => {
     }
 
     let url;
-    switch (type) {
+    url = `sk-${key}`;
+    /*switch (type) {
       case 'ama':
         url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
         break;
@@ -114,7 +115,7 @@ const TokensTable = () => {
         break;
       default:
         url = `sk-${key}`;
-    }
+    }*/
     if (await copy(url)) {
       showSuccess('已复制到剪贴板！');
     } else {
@@ -143,7 +144,8 @@ const TokensTable = () => {
       defaultUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
     }
     let url;
-    switch (type) {
+    url = defaultUrl;
+    /*switch (type) {
       case 'ama':
         url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
         break;
@@ -151,10 +153,10 @@ const TokensTable = () => {
       case 'opencat':
         url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
         break;
-        
+
       default:
         url = defaultUrl;
-    }
+    }*/
   
     window.open(url, '_blank');
   }
@@ -334,39 +336,6 @@ const TokensTable = () => {
                         >
                           复制
                         </Button>
-                        <Dropdown
-                          className='button icon'
-                          floating
-                          options={COPY_OPTIONS.map(option => ({
-                            ...option,
-                            onClick: async () => {
-                              await onCopy(option.value, token.key);
-                            }
-                          }))}
-                          trigger={<></>}
-                        />
-                      </Button.Group>
-                      {' '}
-                      <Button.Group color='blue' size={'small'}>
-                        <Button
-                            size={'small'}
-                            positive
-                            onClick={() => {     
-                              onOpenLink('', token.key);       
-                            }}>
-                            聊天
-                          </Button>
-                          <Dropdown   
-                            className="button icon"       
-                            floating
-                            options={OPEN_LINK_OPTIONS.map(option => ({
-                              ...option,
-                              onClick: async () => {
-                                await onOpenLink(option.value, token.key);
-                              }
-                            }))}       
-                            trigger={<></>}   
-                          />
                       </Button.Group>
                       {' '}
                       <Popup
