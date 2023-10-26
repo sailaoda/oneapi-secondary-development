@@ -11,6 +11,8 @@
    go mod download
    go build -ldflags "-s -w" -o azure-openai-one-api
    
+   GOARCH=amd64 GOOS=linux go build -ldflags "-s -w" -o azure-openai-one-api
+   
    ````
 2. 运行：
    ```shell
