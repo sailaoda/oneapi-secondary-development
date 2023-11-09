@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Header, Label, Pagination, Segment, Select, Table } from 'semantic-ui-react';
-import { API, isAdmin, showError, timestamp2string } from '../helpers';
+import { Button, Form, Header, Label, Pagination, Segment, Select, Table, Popup } from 'semantic-ui-react';
+import {API, copy, isAdmin, showError, showSuccess, showWarning, timestamp2string} from '../helpers';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 import { ITEMS_PER_PAGE } from '../constants';
 import { renderQuota } from '../helpers/render';
@@ -25,6 +26,76 @@ const LOG_OPTIONS = [
   { key: '3', text: '管理', value: 3 },
   { key: '4', text: '系统', value: 4 }
 ];
+
+// const HoverContentCell = ({ content }) => {
+//   const [isCopied, setIsCopied] = useState(false);
+//
+//   const handleCopy = () => {
+//     console.log(`已复制：${content}`);
+//
+//     if (copy({content})) {
+//       showSuccess('已复制到剪贴板！');
+//     } else {
+//       showWarning('无法复制到剪贴板，请手动复制。');
+//     }
+//     setIsCopied(true);
+//
+//     setTimeout(() => {
+//       setIsCopied(false);
+//     }, 1000);
+//   };
+//
+//   return (
+//       <Table.Cell style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+//         <Popup
+//             mouseLeaveDelay={1000}
+//             content={
+//               // <CopyToClipboard text={content}>
+//               //   <span onClick={handleCopy}>{content}</span>
+//               // </CopyToClipboard>
+//               <CopyToClipboard text={content} onCopy={handleCopy}>
+//                 <span>{content}</span>
+//               </CopyToClipboard>
+//             }
+//             trigger={<div>{content}</div>}
+//             position="top center"
+//             inverted
+//         />
+//         {isCopied && <div>复制成功！</div>}
+//       </Table.Cell>
+//   );
+// };
+
+const HoverContentCell = ({ content }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = () => {
+
+    if (copy(content)) {
+      showSuccess('已复制到剪贴板！');
+    } else {
+      showWarning('无法复制到剪贴板，请手动复制。');
+    }
+    setIsCopied(true);
+
+  };
+
+  return (
+      <CopyToClipboard text={content} onCopy={handleCopy}>
+        <Table.Cell style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Popup
+              content={
+                <span>{content}</span>
+              }
+              trigger={<div>{content}</div>}
+              position="top center"
+              inverted
+          />
+        </Table.Cell>
+      </CopyToClipboard>
+  );
+};
+
 
 function renderType(type) {
   switch (type) {
@@ -350,7 +421,6 @@ const LogsTable = () => {
               </Table.HeaderCell>
             </Table.Row>
           </Table.Header>
-
           <Table.Body>
             {logs
               .slice(
@@ -379,8 +449,8 @@ const LogsTable = () => {
                     <Table.Cell>{log.completion_tokens ? log.completion_tokens : ''}</Table.Cell>
                     <Table.Cell>{log.quota ? renderQuota(log.quota, 6) : ''}</Table.Cell>
                     <Table.Cell>{log.content}</Table.Cell>
-                    <Table.Cell>{log.request}</Table.Cell>
-                    <Table.Cell>{log.response}</Table.Cell>
+                    <HoverContentCell content={log.request} />
+                    <HoverContentCell content={log.response} />
                   </Table.Row>
                 );
               })}
