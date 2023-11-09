@@ -404,6 +404,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	}
 
 	var textResponse TextResponse
+	var response string
 	tokenName := c.GetString("token_name")
 
 	defer func(ctx context.Context) {
@@ -414,6 +415,11 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 				completionRatio := common.GetCompletionRatio(textRequest.Model)
 				promptTokens = textResponse.Usage.PromptTokens
 				completionTokens = textResponse.Usage.CompletionTokens
+				jsonDataRequest, err := json.Marshal(textRequest)
+				if err != nil {
+					panic(err)
+				}
+				request := string(jsonDataRequest)
 
 				quota = promptTokens + int(float64(completionTokens)*completionRatio)
 				quota = int(float64(quota) * ratio)
@@ -427,7 +433,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 					quota = 0
 				}
 				quotaDelta := quota - preConsumedQuota
-				err := model.PostConsumeTokenQuota(tokenId, quotaDelta)
+				err = model.PostConsumeTokenQuota(tokenId, quotaDelta)
 				if err != nil {
 					common.LogError(ctx, "error consuming token remain quota: "+err.Error())
 				}
@@ -437,7 +443,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 				}
 				if quota != 0 {
 					logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f", modelRatio, groupRatio)
-					model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, textRequest.Model, tokenName, quota, logContent)
+					model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, textRequest.Model, tokenName, quota, logContent, request, response)
 					model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 					model.UpdateChannelUsedQuota(channelId, quota)
 				}
@@ -451,16 +457,24 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			if err != nil {
 				return err
 			}
+			response = responseText
 			textResponse.Usage.PromptTokens = promptTokens
 			textResponse.Usage.CompletionTokens = countTokenText(responseText, textRequest.Model)
 			return nil
 		} else {
-			err, usage := openaiHandler(c, resp, consumeQuota, promptTokens, textRequest.Model)
+			err, usage, real_response := openaiHandler(c, resp, consumeQuota, promptTokens, textRequest.Model)
 			if err != nil {
 				return err
 			}
 			if usage != nil {
 				textResponse.Usage = *usage
+			}
+			if real_response != nil {
+				jsonDataResponse, err := json.Marshal(real_response)
+				if err != nil {
+					panic(err)
+				}
+				response = string(jsonDataResponse)
 			}
 			return nil
 		}

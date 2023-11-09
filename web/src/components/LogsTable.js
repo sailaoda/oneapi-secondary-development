@@ -330,6 +330,24 @@ const LogsTable = () => {
               >
                 详情
               </Table.HeaderCell>
+              <Table.HeaderCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    sortLog('request');
+                  }}
+                  width={4}
+              >
+                请求
+              </Table.HeaderCell>
+              <Table.HeaderCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    sortLog('response');
+                  }}
+                  width={4}
+              >
+                响应
+              </Table.HeaderCell>
             </Table.Row>
           </Table.Header>
 
@@ -361,6 +379,8 @@ const LogsTable = () => {
                     <Table.Cell>{log.completion_tokens ? log.completion_tokens : ''}</Table.Cell>
                     <Table.Cell>{log.quota ? renderQuota(log.quota, 6) : ''}</Table.Cell>
                     <Table.Cell>{log.content}</Table.Cell>
+                    <Table.Cell>{log.request}</Table.Cell>
+                    <Table.Cell>{log.response}</Table.Cell>
                   </Table.Row>
                 );
               })}

@@ -88,26 +88,26 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	return nil, responseText
 }
 
-func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage) {
+func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *TextResponse) {
 	var textResponse TextResponse
 	if consumeQuota {
 		responseBody, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return errorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+			return errorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil, nil
 		}
 		err = resp.Body.Close()
 		if err != nil {
-			return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+			return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil, nil
 		}
 		err = json.Unmarshal(responseBody, &textResponse)
 		if err != nil {
-			return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+			return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil, nil
 		}
 		if textResponse.Error.Type != "" {
 			return &OpenAIErrorWithStatusCode{
 				OpenAIError: textResponse.Error,
 				StatusCode:  resp.StatusCode,
-			}, nil
+			}, nil, nil
 		}
 		// Reset response body
 		resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
@@ -122,11 +122,11 @@ func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promp
 	c.Writer.WriteHeader(resp.StatusCode)
 	_, err := io.Copy(c.Writer, resp.Body)
 	if err != nil {
-		return errorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
+		return errorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil, nil
 	}
 	err = resp.Body.Close()
 	if err != nil {
-		return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+		return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil, nil
 	}
 
 	if textResponse.Usage.TotalTokens == 0 {
@@ -140,5 +140,5 @@ func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promp
 			TotalTokens:      promptTokens + completionTokens,
 		}
 	}
-	return nil, &textResponse.Usage
+	return nil, &textResponse.Usage, &textResponse
 }

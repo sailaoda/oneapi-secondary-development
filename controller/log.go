@@ -19,8 +19,10 @@ func GetAllLogs(c *gin.Context) {
 	username := c.Query("username")
 	tokenName := c.Query("token_name")
 	modelName := c.Query("model_name")
+	request := c.Query("request")
+	response := c.Query("response")
 	channel, _ := strconv.Atoi(c.Query("channel"))
-	logs, err := model.GetAllLogs(logType, startTimestamp, endTimestamp, modelName, username, tokenName, p*common.ItemsPerPage, common.ItemsPerPage, channel)
+	logs, err := model.GetAllLogs(logType, startTimestamp, endTimestamp, modelName, username, tokenName, p*common.ItemsPerPage, common.ItemsPerPage, channel, request, response)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

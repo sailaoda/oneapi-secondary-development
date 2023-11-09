@@ -20,6 +20,8 @@ type Log struct {
 	PromptTokens     int    `json:"prompt_tokens" gorm:"default:0"`
 	CompletionTokens int    `json:"completion_tokens" gorm:"default:0"`
 	ChannelId        int    `json:"channel" gorm:"index"`
+	Request          string `json:"request"`
+	Response         string `json:"response"`
 }
 
 const (
@@ -47,8 +49,8 @@ func RecordLog(userId int, logType int, content string) {
 	}
 }
 
-func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptTokens int, completionTokens int, modelName string, tokenName string, quota int, content string) {
-	common.LogInfo(ctx, fmt.Sprintf("record consume log: userId=%d, channelId=%d, promptTokens=%d, completionTokens=%d, modelName=%s, tokenName=%s, quota=%d, content=%s", userId, channelId, promptTokens, completionTokens, modelName, tokenName, quota, content))
+func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptTokens int, completionTokens int, modelName string, tokenName string, quota int, content string, request string, response string) {
+	common.LogInfo(ctx, fmt.Sprintf("record consume log: userId=%d, channelId=%d, promptTokens=%d, completionTokens=%d, modelName=%s, tokenName=%s, quota=%d, content=%s, request=%s, response=%s", userId, channelId, promptTokens, completionTokens, modelName, tokenName, quota, content, request, response))
 	if !common.LogConsumeEnabled {
 		return
 	}
@@ -64,6 +66,8 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 		ModelName:        modelName,
 		Quota:            quota,
 		ChannelId:        channelId,
+		Request:          request,
+		Response:         response,
 	}
 	err := DB.Create(log).Error
 	if err != nil {
@@ -71,7 +75,7 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 	}
 }
 
-func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, startIdx int, num int, channel int) (logs []*Log, err error) {
+func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, startIdx int, num int, channel int, request string, response string) (logs []*Log, err error) {
 	var tx *gorm.DB
 	if logType == LogTypeUnknown {
 		tx = DB
@@ -95,6 +99,12 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 	}
 	if channel != 0 {
 		tx = tx.Where("channel = ?", channel)
+	}
+	if request != "" {
+		tx = tx.Where("request = ?", request)
+	}
+	if response != "" {
+		tx = tx.Where("response = ?", response)
 	}
 	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&logs).Error
 	return logs, err
