@@ -101,16 +101,16 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 		tx = tx.Where("channel = ?", channel)
 	}
 	if request != "" {
-		tx = tx.Where("request = ?", request)
+		tx = tx.Where("request like ?", "%"+request+"%")
 	}
 	if response != "" {
-		tx = tx.Where("response = ?", response)
+		tx = tx.Where("response like ?", "%"+response+"%")
 	}
 	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&logs).Error
 	return logs, err
 }
 
-func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int64, modelName string, tokenName string, startIdx int, num int) (logs []*Log, err error) {
+func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int64, modelName string, tokenName string, request string, response string, startIdx int, num int) (logs []*Log, err error) {
 	var tx *gorm.DB
 	if logType == LogTypeUnknown {
 		tx = DB.Where("user_id = ?", userId)
@@ -128,6 +128,12 @@ func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int
 	}
 	if endTimestamp != 0 {
 		tx = tx.Where("created_at <= ?", endTimestamp)
+	}
+	if request != "" {
+		tx = tx.Where("request like ?", "%"+request+"%")
+	}
+	if response != "" {
+		tx = tx.Where("response like ?", "%"+response+"%")
 	}
 	err = tx.Order("id desc").Limit(num).Offset(startIdx).Omit("id").Find(&logs).Error
 	return logs, err
