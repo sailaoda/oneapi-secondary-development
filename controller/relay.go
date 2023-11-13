@@ -11,10 +11,23 @@ import (
 )
 
 type Message struct {
-	Role    string  `json:"role"`
-	Content string  `json:"content"`
-	Name    *string `json:"name,omitempty"`
+	Role         string        `json:"role"`
+	Content      string        `json:"content"`
+	Name         *string       `json:"name,omitempty"`
+	FunctionCall *FunctionCall `json:"function_call,omitempty"`
 }
+
+type FunctionCall struct {
+	Name      string `json:"name"`
+	Arguments any    `json:"args"`
+}
+
+//type ResponseMessage struct {
+//	Role         string  `json:"role"`
+//	Content      string  `json:"content"`
+//	Name         *string `json:"name,omitempty"`
+//	FunctionCall *string `json:"function_call,omitempty"`
+//}
 
 const (
 	RelayModeUnknown = iota
@@ -43,6 +56,8 @@ type GeneralOpenAIRequest struct {
 	Size         string    `json:"size,omitempty"`
 	Functions    any       `json:"functions,omitempty"`
 	FunctionCall any       `json:"function_call,omitempty"`
+	Tools        any       `json:"tools,omitempty"`
+	ToolChoice   any       `json:"tool_choice,omitempty"`
 }
 
 func (r GeneralOpenAIRequest) ParseInput() []string {

@@ -146,6 +146,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			model_ = strings.TrimSuffix(model_, "-0301")
 			model_ = strings.TrimSuffix(model_, "-0314")
 			model_ = strings.TrimSuffix(model_, "-0613")
+			model_ = strings.TrimPrefix(model_, "-1106")
 			fullRequestURL = fmt.Sprintf("%s/openai/deployments/%s/%s", baseURL, model_, task)
 		}
 	case APITypeClaude:
@@ -462,15 +463,15 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			textResponse.Usage.CompletionTokens = countTokenText(responseText, textRequest.Model)
 			return nil
 		} else {
-			err, usage, real_response := openaiHandler(c, resp, consumeQuota, promptTokens, textRequest.Model)
+			err, usage, realResponse := openaiHandler(c, resp, consumeQuota, promptTokens, textRequest.Model)
 			if err != nil {
 				return err
 			}
 			if usage != nil {
 				textResponse.Usage = *usage
 			}
-			if real_response != nil {
-				jsonDataResponse, err := json.Marshal(real_response)
+			if realResponse != nil {
+				jsonDataResponse, err := json.Marshal(realResponse)
 				if err != nil {
 					panic(err)
 				}
