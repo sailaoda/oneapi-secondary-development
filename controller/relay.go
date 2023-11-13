@@ -19,7 +19,7 @@ type Message struct {
 
 type FunctionCall struct {
 	Name      string `json:"name"`
-	Arguments any    `json:"args"`
+	Arguments any    `json:"arguments"`
 }
 
 //type ResponseMessage struct {
