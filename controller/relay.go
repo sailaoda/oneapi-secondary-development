@@ -15,6 +15,17 @@ type Message struct {
 	Content      string        `json:"content"`
 	Name         *string       `json:"name,omitempty"`
 	FunctionCall *FunctionCall `json:"function_call,omitempty"`
+	ToolCalls    *[]ToolCall   `json:"tool_calls,omitempty"`
+}
+
+type ToolCall struct {
+	Id       string   `json:"id"`
+	Function Function `json:"function"`
+}
+
+type Function struct {
+	Name      string `json:"name"`
+	Arguments any    `json:"arguments"`
 }
 
 type FunctionCall struct {
