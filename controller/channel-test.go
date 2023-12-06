@@ -49,6 +49,8 @@ func testChannel(channel *model.Channel, request ChatRequest, addazure AzureAddi
 	if channel.Type == common.ChannelTypeAzure {
 		requestURL = fmt.Sprintf("%s/openai/deployments/%s/chat/completions?api-version=2023-07-01-preview", channel.GetBaseURL(), request.Model)
 
+	} else if channel.Type == common.ChannelTypeLaiye {
+		requestURL = channel.GetBaseURL()
 	} else {
 		if channel.GetBaseURL() != "" {
 			requestURL = channel.GetBaseURL()

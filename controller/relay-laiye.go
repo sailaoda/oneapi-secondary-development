@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*OpenAIErrorWithStatusCode, string) {
+func laiyeStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*OpenAIErrorWithStatusCode, string) {
 	responseText := ""
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
@@ -88,7 +88,8 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	return nil, responseText
 }
 
-func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *TextResponse) {
+func laiyeHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *TextResponse) {
+	var laiyeTextResponse LaiyeTextResponse
 	var textResponse TextResponse
 	if consumeQuota {
 		responseBody, err := io.ReadAll(resp.Body)
@@ -99,7 +100,8 @@ func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promp
 		if err != nil {
 			return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil, nil
 		}
-		err = json.Unmarshal(responseBody, &textResponse)
+		err = json.Unmarshal(responseBody, &laiyeTextResponse)
+		textResponse = laiyeTextResponse.Data
 		if err != nil {
 			return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil, nil
 		}

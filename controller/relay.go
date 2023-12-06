@@ -12,7 +12,7 @@ import (
 
 type Message struct {
 	Role         string        `json:"role"`
-	Content      string        `json:"content"`
+	Content      any           `json:"content"`
 	Name         *string       `json:"name,omitempty"`
 	FunctionCall *FunctionCall `json:"function_call,omitempty"`
 	ToolCalls    *[]ToolCall   `json:"tool_calls,omitempty"`
@@ -33,6 +33,45 @@ type FunctionCall struct {
 	Arguments any    `json:"arguments"`
 }
 
+type ImageURL struct {
+	Url    string `json:"url,omitempty"`
+	Detail string `json:"detail,omitempty"`
+}
+
+type TextContent struct {
+	Type string `json:"type,omitempty"`
+	Text string `json:"text,omitempty"`
+}
+
+type ImageContent struct {
+	Type     string    `json:"type,omitempty"`
+	ImageURL *ImageURL `json:"image_url,omitempty"`
+}
+
+func (m Message) StringContent() string {
+	content, ok := m.Content.(string)
+	if ok {
+		return content
+	}
+	contentList, ok := m.Content.([]any)
+	if ok {
+		var contentStr string
+		for _, contentItem := range contentList {
+			contentMap, ok := contentItem.(map[string]any)
+			if !ok {
+				continue
+			}
+			if contentMap["type"] == "text" {
+				if subStr, ok := contentMap["text"].(string); ok {
+					contentStr += subStr
+				}
+			}
+		}
+		return contentStr
+	}
+	return ""
+}
+
 //type ResponseMessage struct {
 //	Role         string  `json:"role"`
 //	Content      string  `json:"content"`
@@ -48,7 +87,9 @@ const (
 	RelayModeModerations
 	RelayModeImagesGenerations
 	RelayModeEdits
-	RelayModeAudio
+	RelayModeAudioSpeech
+	RelayModeAudioTranscription
+	RelayModeAudioTranslation
 )
 
 // https://platform.openai.com/docs/api-reference/chat
@@ -120,14 +161,32 @@ type TextRequest struct {
 	//Stream   bool      `json:"stream"`
 }
 
+// ImageRequest docs: https://platform.openai.com/docs/api-reference/images/create
 type ImageRequest struct {
-	Prompt string `json:"prompt"`
-	N      int    `json:"n"`
-	Size   string `json:"size"`
+	Model          string `json:"model"`
+	Prompt         string `json:"prompt" binding:"required"`
+	N              int    `json:"n,omitempty"`
+	Size           string `json:"size,omitempty"`
+	Quality        string `json:"quality,omitempty"`
+	ResponseFormat string `json:"response_format,omitempty"`
+	Style          string `json:"style,omitempty"`
+	User           string `json:"user,omitempty"`
 }
 
 type AudioResponse struct {
 	Text string `json:"text,omitempty"`
+}
+
+type WhisperResponse struct {
+	Text string `json:"text,omitempty"`
+}
+
+type TextToSpeechRequest struct {
+	Model          string  `json:"model" binding:"required"`
+	Input          string  `json:"input" binding:"required"`
+	Voice          string  `json:"voice" binding:"required"`
+	Speed          float64 `json:"speed"`
+	ResponseFormat string  `json:"response_format"`
 }
 
 type Usage struct {
@@ -146,6 +205,11 @@ type OpenAIError struct {
 type OpenAIErrorWithStatusCode struct {
 	OpenAIError
 	StatusCode int `json:"status_code"`
+}
+
+type LaiyeTextResponse struct {
+	Data  TextResponse `json:"data"`
+	Error any          `json:"error"`
 }
 
 type TextResponse struct {
@@ -226,14 +290,22 @@ func Relay(c *gin.Context) {
 		relayMode = RelayModeImagesGenerations
 	} else if strings.HasPrefix(c.Request.URL.Path, "/v1/edits") {
 		relayMode = RelayModeEdits
-	} else if strings.HasPrefix(c.Request.URL.Path, "/v1/audio") {
-		relayMode = RelayModeAudio
+	} else if strings.HasPrefix(c.Request.URL.Path, "/v1/audio/speech") {
+		relayMode = RelayModeAudioSpeech
+	} else if strings.HasPrefix(c.Request.URL.Path, "/v1/audio/transcriptions") {
+		relayMode = RelayModeAudioTranscription
+	} else if strings.HasPrefix(c.Request.URL.Path, "/v1/audio/translations") {
+		relayMode = RelayModeAudioTranslation
 	}
 	var err *OpenAIErrorWithStatusCode
 	switch relayMode {
 	case RelayModeImagesGenerations:
 		err = relayImageHelper(c, relayMode)
-	case RelayModeAudio:
+	case RelayModeAudioSpeech:
+		fallthrough
+	case RelayModeAudioTranslation:
+		fallthrough
+	case RelayModeAudioTranscription:
 		err = relayAudioHelper(c, relayMode)
 	default:
 		err = relayTextHelper(c, relayMode)

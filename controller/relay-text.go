@@ -26,6 +26,7 @@ const (
 	APITypeXunfei
 	APITypeAIProxyLibrary
 	APITypeTencent
+	APITypeLaiye
 )
 
 var httpClient *http.Client
@@ -120,6 +121,8 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		apiType = APITypeAIProxyLibrary
 	case common.ChannelTypeTencent:
 		apiType = APITypeTencent
+	case common.ChannelTypeLaiye:
+		apiType = APITypeLaiye
 	}
 	baseURL := common.ChannelBaseURLs[channelType]
 	requestURL := c.Request.URL.String()
@@ -149,6 +152,8 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			model_ = strings.TrimPrefix(model_, "-1106")
 			fullRequestURL = fmt.Sprintf("%s/openai/deployments/%s/%s", baseURL, model_, task)
 		}
+	//case APITypeLaiye:
+	//	fullRequestURL = "https://openapi.laiye.com/open/api/v1"
 	case APITypeClaude:
 		fullRequestURL = "https://api.anthropic.com/v1/complete"
 		if baseURL != "" {
@@ -350,6 +355,8 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 					req.Header.Set("X-Title", "One API")
 				}
 			}
+		case APITypeLaiye:
+			req.Header.Set("Authorization", c.Request.Header.Get("Authorization"))
 		case APITypeClaude:
 			req.Header.Set("x-api-key", apiKey)
 			anthropicVersion := c.Request.Header.Get("anthropic-version")
@@ -464,6 +471,33 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			return nil
 		} else {
 			err, usage, realResponse := openaiHandler(c, resp, consumeQuota, promptTokens, textRequest.Model)
+			if err != nil {
+				return err
+			}
+			if usage != nil {
+				textResponse.Usage = *usage
+			}
+			if realResponse != nil {
+				jsonDataResponse, err := json.Marshal(realResponse)
+				if err != nil {
+					panic(err)
+				}
+				response = string(jsonDataResponse)
+			}
+			return nil
+		}
+	case APITypeLaiye:
+		if isStream {
+			err, responseText := laiyeStreamHandler(c, resp, relayMode)
+			if err != nil {
+				return err
+			}
+			response = responseText
+			textResponse.Usage.PromptTokens = promptTokens
+			textResponse.Usage.CompletionTokens = countTokenText(responseText, textRequest.Model)
+			return nil
+		} else {
+			err, usage, realResponse := laiyeHandler(c, resp, consumeQuota, promptTokens, textRequest.Model)
 			if err != nil {
 				return err
 			}
