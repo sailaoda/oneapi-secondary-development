@@ -16,6 +16,7 @@ type Message struct {
 	Name         *string       `json:"name,omitempty"`
 	FunctionCall *FunctionCall `json:"function_call,omitempty"`
 	ToolCalls    *[]ToolCall   `json:"tool_calls,omitempty"`
+	ToolCallId   *string       `json:"tool_call_id,omitempty"`
 }
 
 type ToolCall struct {
@@ -208,8 +209,8 @@ type OpenAIErrorWithStatusCode struct {
 }
 
 type LaiyeTextResponse struct {
-	Data  TextResponse `json:"data"`
-	Error any          `json:"error"`
+	Data  OpenAITextResponse `json:"data"`
+	Error any                `json:"error"`
 }
 
 type TextResponse struct {
@@ -230,6 +231,7 @@ type OpenAITextResponse struct {
 	Created int64                      `json:"created"`
 	Choices []OpenAITextResponseChoice `json:"choices"`
 	Usage   `json:"usage"`
+	Error   OpenAIError `json:"error"`
 }
 
 type OpenAIEmbeddingResponseItem struct {

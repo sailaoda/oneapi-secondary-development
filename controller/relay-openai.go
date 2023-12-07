@@ -88,8 +88,8 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	return nil, responseText
 }
 
-func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *TextResponse) {
-	var textResponse TextResponse
+func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *OpenAITextResponse) {
+	var textResponse OpenAITextResponse
 	if consumeQuota {
 		responseBody, err := io.ReadAll(resp.Body)
 		if err != nil {

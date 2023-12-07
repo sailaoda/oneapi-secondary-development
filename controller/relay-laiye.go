@@ -88,9 +88,9 @@ func laiyeStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*Op
 	return nil, responseText
 }
 
-func laiyeHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *TextResponse) {
+func laiyeHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *OpenAITextResponse) {
 	var laiyeTextResponse LaiyeTextResponse
-	var textResponse TextResponse
+	var textResponse OpenAITextResponse
 	if consumeQuota {
 		responseBody, err := io.ReadAll(resp.Body)
 		if err != nil {
