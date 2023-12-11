@@ -136,6 +136,8 @@ const LogsTable = () => {
 
   const [stat, setStat] = useState({
     quota: 0,
+    prompt_token: 0,
+    completion_token: 0,
     token: 0
   });
 
@@ -216,6 +218,7 @@ const LogsTable = () => {
   const refresh = async () => {
     setLoading(true);
     setActivePage(1);
+    setShowStat(false);
     await loadLogs(0);
   };
 
@@ -273,8 +276,14 @@ const LogsTable = () => {
       <Segment>
         <Header as='h3'>
           使用明细（总消耗额度：
-          {showStat && renderQuota(stat.quota)}
-          {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看</span>}
+          {showStat && renderQuota(stat.quota) + String.fromCharCode(32)}
+          {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
+          总消耗prompt token：
+          {showStat && stat.prompt_token + String.fromCharCode(32)}
+          {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
+          总消耗completion token：
+          {showStat && stat.completion_token + String.fromCharCode(32)}
+          {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
           ）
         </Header>
         <Form>
