@@ -274,8 +274,10 @@ const LogsTable = () => {
   return (
     <>
       <Segment>
-        <Header as='h3'>
+        <Header as='h2'>
           使用明细
+        </Header>
+        <Header as='h3'>
           <div>
             总消耗额度：
             {showStat && renderQuota(stat.quota) + String.fromCharCode(32)}
