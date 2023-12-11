@@ -275,16 +275,22 @@ const LogsTable = () => {
     <>
       <Segment>
         <Header as='h3'>
-          使用明细（总消耗额度：
-          {showStat && renderQuota(stat.quota) + String.fromCharCode(32)}
-          {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
-          总消耗prompt token：
-          {showStat && stat.prompt_token + String.fromCharCode(32)}
-          {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
+          使用明细
+          <div>
+            总消耗额度：
+            {showStat && renderQuota(stat.quota) + String.fromCharCode(32)}
+            {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
+          </div>
+          <div>
+            总消耗prompt token：
+            {showStat && stat.prompt_token + String.fromCharCode(32)}
+            {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
+          </div>
+          <div>
           总消耗completion token：
           {showStat && stat.completion_token + String.fromCharCode(32)}
           {!showStat && <span onClick={handleEyeClick} style={{ cursor: 'pointer', color: 'gray' }}>点击查看 {String.fromCharCode(32)}</span>}
-          ）
+          </div>
         </Header>
         <Form>
           {
