@@ -89,7 +89,7 @@ func laiyeStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*Op
 }
 
 func laiyeHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage, *OpenAITextResponse) {
-	var laiyeTextResponse LaiyeTextResponse
+	var laiyeTextResponse OpenAITextResponse
 	var textResponse OpenAITextResponse
 	if consumeQuota {
 		responseBody, err := io.ReadAll(resp.Body)
@@ -101,7 +101,7 @@ func laiyeHandler(c *gin.Context, resp *http.Response, consumeQuota bool, prompt
 			return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil, nil
 		}
 		err = json.Unmarshal(responseBody, &laiyeTextResponse)
-		textResponse = laiyeTextResponse.Data
+		textResponse = laiyeTextResponse
 		if err != nil {
 			return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil, nil
 		}

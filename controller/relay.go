@@ -208,11 +208,6 @@ type OpenAIErrorWithStatusCode struct {
 	StatusCode int `json:"status_code"`
 }
 
-type LaiyeTextResponse struct {
-	Data  OpenAITextResponse `json:"data"`
-	Error any                `json:"error"`
-}
-
 type TextResponse struct {
 	Choices []OpenAITextResponseChoice `json:"choices"`
 	Usage   `json:"usage"`
