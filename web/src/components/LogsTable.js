@@ -126,7 +126,7 @@ const LogsTable = () => {
     username: '',
     token_name: '',
     model_name: '',
-    start_timestamp: timestamp2string(0),
+    start_timestamp: timestamp2string(1698218684),
     end_timestamp: timestamp2string(now.getTime() / 1000 + 3600),
     channel: '',
     request: '',
