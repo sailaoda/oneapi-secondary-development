@@ -148,8 +148,9 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			// https://github.com/songquanpeng/one-api/issues/67
 			model_ = strings.TrimSuffix(model_, "-0301")
 			model_ = strings.TrimSuffix(model_, "-0314")
-			model_ = strings.TrimSuffix(model_, "-0613")
-			model_ = strings.TrimPrefix(model_, "-1106")
+			// azure openai api 的情况下不用去掉日期
+			// model_ = strings.TrimSuffix(model_, "-0613")
+			// model_ = strings.TrimPrefix(model_, "-1106")
 			fullRequestURL = fmt.Sprintf("%s/openai/deployments/%s/%s", baseURL, model_, task)
 		}
 	//case APITypeLaiye:
