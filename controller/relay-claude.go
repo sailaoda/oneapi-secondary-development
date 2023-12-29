@@ -54,10 +54,10 @@ func requestOpenAI2Claude(textRequest GeneralOpenAIRequest) *ClaudeRequest {
 	claudeRequest := ClaudeRequest{
 		Model:             textRequest.Model,
 		Prompt:            "",
-		MaxTokensToSample: textRequest.MaxTokens,
+		MaxTokensToSample: *textRequest.MaxTokens,
 		StopSequences:     nil,
-		Temperature:       textRequest.Temperature,
-		TopP:              textRequest.TopP,
+		Temperature:       *textRequest.Temperature,
+		TopP:              *textRequest.TopP,
 		Stream:            textRequest.Stream,
 	}
 	if claudeRequest.MaxTokensToSample == 0 {

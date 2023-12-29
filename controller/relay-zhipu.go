@@ -129,8 +129,8 @@ func requestOpenAI2Zhipu(request GeneralOpenAIRequest) *ZhipuRequest {
 	}
 	return &ZhipuRequest{
 		Prompt:      messages,
-		Temperature: request.Temperature,
-		TopP:        request.TopP,
+		Temperature: *request.Temperature,
+		TopP:        *request.TopP,
 		Incremental: false,
 	}
 }

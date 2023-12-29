@@ -52,10 +52,10 @@ func requestOpenAI2PaLM(textRequest GeneralOpenAIRequest) *PaLMChatRequest {
 		Prompt: PaLMPrompt{
 			Messages: make([]PaLMChatMessage, 0, len(textRequest.Messages)),
 		},
-		Temperature:    textRequest.Temperature,
-		CandidateCount: textRequest.N,
-		TopP:           textRequest.TopP,
-		TopK:           textRequest.MaxTokens,
+		Temperature:    *textRequest.Temperature,
+		CandidateCount: *textRequest.N,
+		TopP:           *textRequest.TopP,
+		TopK:           *textRequest.MaxTokens,
 	}
 	for _, message := range textRequest.Messages {
 		palmMessage := PaLMChatMessage{

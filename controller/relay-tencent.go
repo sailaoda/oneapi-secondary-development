@@ -105,8 +105,8 @@ func requestOpenAI2Tencent(request GeneralOpenAIRequest) *TencentChatRequest {
 		Timestamp:   common.GetTimestamp(),
 		Expired:     common.GetTimestamp() + 24*60*60,
 		QueryID:     common.GetUUID(),
-		Temperature: request.Temperature,
-		TopP:        request.TopP,
+		Temperature: *request.Temperature,
+		TopP:        *request.TopP,
 		Stream:      stream,
 		Messages:    messages,
 	}
